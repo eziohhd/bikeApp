@@ -1,5 +1,4 @@
-package com.example.biking;
-
+package com.example.android.signallab;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,7 +10,7 @@ public class Common {
 
     // private array to help with continious input data
     private double[] m_array;
-    private double caloriesBurned = 0;
+    private double m_accDrift;
 
     public double[] calculateMovingAverage(double[] array, double n) {
 
@@ -95,45 +94,6 @@ public class Common {
         return min;
     }
 
-    public double caloriesBurned(double bodyWeight, double velocity, double seconds) {
-        // km/h to mph
-        double mph = velocity * 0.6214;
-        // thresholds of velocity and corresponding met
-        double met;
-        double threshold1 = 5.5;  //3.5
-        double threshold2 = 8;  //4
-        double threshold3 = 9.4; //5.8
-        double threshold4 = 11.9;//6.8
-        double threshold5 = 13.9;//8
-        double threshold6 = 15.9;//10
-        double threshold7 = 19;//12
-        if ((0 < mph) && (mph <= threshold1)) {
-            met = 3.5;
-        } else if ((threshold1 < mph) && (mph <= threshold2)) {
-            met = 4;
-        } else if ((threshold2 < mph) && (mph <= threshold3)) {
-            met = 5.8;
-        } else if ((threshold3 < mph) && (mph <= threshold4)) {
-            met = 6.8;
-        } else if ((threshold4 < mph) && (mph <= threshold5)) {
-            met = 8;
-        } else if ((threshold5 < mph) && (mph <= threshold6)) {
-            met = 10;
-        } else if ((threshold6 < mph) && (mph <= threshold7)) {
-            met = 12;
-        } else if(mph>threshold7){
-            met = 15.8;
-        } else{
-            met = 0;
-        }
-
-        // calories burned
-        caloriesBurned = caloriesBurned + met * bodyWeight * 3.5 / 200 / 60 * seconds;
-        return  caloriesBurned;
-
-
-    }
-
     public void write(String filename, ArrayList<Double> x) throws IOException {
         BufferedWriter outputWriter = null;
         outputWriter = new BufferedWriter(new FileWriter(filename));
@@ -205,13 +165,13 @@ public class Common {
 
         // find motion status based on the peaks and valleys
         for (int i = 0; i < peakValleyIndex.size() - 1; ++i) {
-            if (((peakValleys.get(i + 1) - peakValleys.get(i)) > threshold1) && (peakValleys.get(i + 1) > threshold1))
+            if (((peakValleys.get(i + 1) - peakValleys.get(i)) > threshold1)&& (peakValleys.get(i + 1) > threshold1))
                 motionStatus.add(1);// acc
             else if (((peakValleys.get(i + 1) - peakValleys.get(i)) < -threshold2) && (peakValleys.get(i) > threshold1))
                 motionStatus.add(1);// acc
-            else if (((peakValleys.get(i + 1) - peakValleys.get(i)) < -threshold1) && (peakValleys.get(i + 1) < -threshold2))
+            else if (((peakValleys.get(i + 1) - peakValleys.get(i)) < -threshold1) &&(peakValleys.get(i + 1) < -threshold2))
                 motionStatus.add(1);// dec
-            else if (((peakValleys.get(i + 1) - peakValleys.get(i)) > threshold2) && (peakValleys.get(i) < -threshold1))
+            else if (((peakValleys.get(i + 1) - peakValleys.get(i)) > threshold2) &&(peakValleys.get(i) < -threshold1))
                 motionStatus.add(1);// dec
             else
                 motionStatus.add(0);// const
@@ -264,6 +224,7 @@ public class Common {
             }
         } else if ((motionStatus.size() > 0) && (motionStatus.get(motionStatus.size() - 1) == 0)) {
             avgconstV = average(array);
+            m_accDrift = avgconstV;
             if (avgconstV < 0) {
                 for (int j = 0; j < array.length; ++j) {
                     array[j] -= avgconstV;
@@ -276,8 +237,9 @@ public class Common {
             // m_array = new double[LastZoneLen];
             // System.arraycopy(array, 0, m_array, 0, LastZoneLen);
             // return null;
-            for (int i = 0; i < array.length; i++) {
-                array[i] = array[i] * 2;
+            for(int i = 0;i < array.length;i++)
+            {
+                array[i] = array[i]*2;
             }
             return array;
         } else { // cannot detect motion status
@@ -287,7 +249,7 @@ public class Common {
                 for (int j = 0; j < array.length; ++j) {
                     array[j] -= avgconstV;
                 }
-            } else if (driftAcc < 0) {
+            } else if(driftAcc<0){
                 for (int j = 0; j < array.length; ++j) {
                     array[j] -= driftAcc;
                 }

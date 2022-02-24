@@ -479,7 +479,7 @@ public class KdGaugeView extends View {
 
     public void setDistance(float mDistance) {
         this.mDistance = mDistance;
-//        startProgressAnimation(mDistance);
+        startProgressAnimation(mDistance);
     }
 
     public void setMinute(int mMinute) {

@@ -25,17 +25,17 @@ public class MainActivity extends AppCompatActivity  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final String apiKey = BuildConfig.MAPS_API_KEY;
-
-        if (apiKey.equals("")) {
-            Toast.makeText(this, getString(R.string.error_api_key), Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        // Setup Places Client
-        if (!Places.isInitialized()) {
-            Places.initialize(getApplicationContext(), apiKey);
-        }
+//        final String apiKey = BuildConfig.MAPS_API_KEY;
+//
+//        if (apiKey.equals("")) {
+//            Toast.makeText(this, getString(R.string.error_api_key), Toast.LENGTH_LONG).show();
+//            return;
+//        }
+//
+//        // Setup Places Client
+//        if (!Places.isInitialized()) {
+//            Places.initialize(getApplicationContext(), apiKey);
+//        }
 
         if(isServicesOK()){
             init();

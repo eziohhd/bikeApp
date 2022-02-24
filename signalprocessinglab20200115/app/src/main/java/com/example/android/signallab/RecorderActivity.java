@@ -39,7 +39,7 @@ public class RecorderActivity extends AppCompatActivity {
     byte[] outAudioBuffer;
     byte[] workBuffer;
     byte[] filter;
-    private static final String DataFile = "BufferData.txt"; //Name of the file to which the data is exported
+    private static final String DataFile = "BufferData_test.txt"; //Name of the file to which the data is exported
 
 
     private static int filterLength = 256;
@@ -157,7 +157,7 @@ public class RecorderActivity extends AppCompatActivity {
                     //copy data to workBuffer
                     //check that workBuffer is not overrun
                     if (bufferPosition + num > workBuffer.length - 1) {
-                        java.lang.System.arraycopy(inAudioBuffer, 0, workBuffer, bufferPosition, workBuffer.length - bufferPosition - 1);
+                        java.lang.System.arraycopy(inAudioBuffer, 0, workBuffer,bufferPosition,workBuffer.length - bufferPosition - 1);
                         //start the filter updater now!!
                         runFilterCalculator = true;
                     } else {
@@ -294,10 +294,10 @@ public class RecorderActivity extends AppCompatActivity {
         }
 
         for (int i = 0; i < Data.length; i++) {
-            // String textData = String.valueOf(Data[i]) + "\n";
+             String textData = String.valueOf(Data[i]) + "\n";
 		
             try {
-                // fos.write(textData.getBytes()); //The vector is saved in a txt-file on the device
+                 fos.write(textData.getBytes()); //The vector is saved in a txt-file on the device
 		fos.writeByte(Data[i]);
             } catch (IOException e) {
                 e.printStackTrace();

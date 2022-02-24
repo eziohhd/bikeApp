@@ -7,13 +7,22 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.io.FileOutputStream;
 import java.lang.Math;
+import java.io.*;
+import java.util.Scanner;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
@@ -22,7 +31,7 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 public class AccelerometerActivity extends AppCompatActivity implements SensorEventListener {
 
     GraphView graph;
-    TextView xVal, yVal, zVal, tiltVal, vVal;
+    TextView xVal, yVal, zVal, tiltVal, vVal, textContent;
     SensorManager sensorManager;
     Sensor accelerometer;
     LineGraphSeries<DataPoint> seriesX, seriesY, seriesZ;
@@ -36,9 +45,26 @@ public class AccelerometerActivity extends AppCompatActivity implements SensorEv
     double tiltAngle;
 
     float x, y, z; // acceleration on 3 axises excluding gravity
+    double aX, aY, aZ, mX, mY, mZ;// for madgwick filter
     float x_fGravity, y_fGravity, z_fGravity;
-    int nBufferSize = 100; // get average of y_axix acceleration
-    float array_yAcc[] = new float[nBufferSize];
+    float x_fGyro, y_fGyro, z_fGyro; // Gyroscope
+    int nBufferSize = 300; // get average of y_axix acceleration
+    int nMovMeanSize = 100;
+    double dArrayXacc[] = new double[nBufferSize];
+    double dArrayYacc[] = new double[nBufferSize];
+    double dArrayZacc[] = new double[nBufferSize];
+    float array_yAcc[];
+    float array_xAcc[];
+    float array_zAcc[];
+    float array_yAccMadgwick[];
+    float array_xAccMadgwick[];
+    float array_zAccMadgwick[];
+    float array_yAccRaw[];
+    float array_xAccRaw[];
+    float array_zAccRaw[];
+    float array_xGyro[];
+    float array_yGyro[];
+    float array_zGyro[];
     float avg_yAcc;
 
     // elapsed time
@@ -47,9 +73,56 @@ public class AccelerometerActivity extends AppCompatActivity implements SensorEv
     long elapsedTime;
     long accElapsedTime;
 
-    // Gyroscope
+    // Gyroscope&graavity
     SensorManager sensorManager2;
+    SensorManager sensorManager3;
+    SensorManager sensorManager4;
+    SensorManager sensorManager5;
     Sensor gravitySensor;
+    Sensor gyroSensor;
+    Sensor magneticSensor;
+    Sensor rawAccSensor;
+
+    // MadgwickFilter
+    MadgwickFilter madgwickFilter = new MadgwickFilter();
+
+    // Common
+    Common common = new Common();
+
+    // txt save
+    private static final String DataFileY = "BufferDataY.txt"; //Name of the file to which the data is exported
+    private static final String DataFileX = "BufferDataX.txt"; //Name of the file to which the data is exported
+    private static final String DataFileZ = "BufferDataZ.txt"; //Name of the file to which the data is exported
+    private static final String DataFileRawY = "BufferDataRawY.txt"; //Name of the file to which the data is exported
+    private static final String DataFileRawX = "BufferDataRawX.txt"; //Name of the file to which the data is exported
+    private static final String DataFileRawZ = "BufferDataRawZ.txt"; //Name of the file to which the data is exported
+    private static final String DataFileMadgwickY = "BufferDataMadgwickY.txt"; //Name of the file to which the data is exported
+    private static final String DataFileMadgwickX = "BufferDataMadgwickX.txt"; //Name of the file to which the data is exported
+    private static final String DataFileMadgwickZ = "BufferDataMadgwickZ.txt"; //Name of the file to which the data is exported
+    private static final String DataFileGyroX = "BufferDataGyroX.txt"; //Name of the file to which the data is exported
+    private static final String DataFileGyroY = "BufferDataGyroY.txt"; //Name of the file to which the data is exported
+    private static final String DataFileGyroZ = "BufferDataGyroZ.txt"; //Name of the file to which the data is exported
+    byte[] workBuffer = new byte[nBufferSize * 4];
+    boolean bSave = true;
+
+    // IIR filter removing gravity
+    float gravity[] = new float[3]; // global variable in onCreate
+
+    // arraylists
+    ArrayList<Float> accListX = new ArrayList<Float>();
+    ArrayList<Float> accListY = new ArrayList<Float>();
+    ArrayList<Float> accListZ = new ArrayList<Float>();
+    ArrayList<Float> accListMadgwickX = new ArrayList<Float>();
+    ArrayList<Float> accListMadgwickY = new ArrayList<Float>();
+    ArrayList<Float> accListMadgwickZ = new ArrayList<Float>();
+    ArrayList<Float> accListRawX = new ArrayList<Float>();
+    ArrayList<Float> accListRawY = new ArrayList<Float>();
+    ArrayList<Float> accListRawZ = new ArrayList<Float>();
+    ArrayList<Float> gyroListX = new ArrayList<Float>();
+    ArrayList<Float> gyroListY = new ArrayList<Float>();
+    ArrayList<Float> gyroListZ = new ArrayList<Float>();
+    boolean bGoSave = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,15 +160,29 @@ public class AccelerometerActivity extends AppCompatActivity implements SensorEv
         zVal = findViewById(R.id.zValueView);
         tiltVal = findViewById(R.id.tiltView);
         vVal = findViewById(R.id.vValueView);
+        textContent = findViewById(R.id.textContentView);
 
         // Initializing the sensor manager with an accelerometer, and registering a listener.
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL); //SENSOR_DELAY_NORMAL
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION); //
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST); //SENSOR_DELAY_NORMAL
         // Gyroscope initialization
         sensorManager2 = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        gravitySensor = sensorManager2.getDefaultSensor(Sensor.TYPE_GRAVITY);
-        sensorManager.registerListener(this, gravitySensor, SensorManager.SENSOR_DELAY_NORMAL);// SENSOR_DELAY_NORMAL
+        gyroSensor = sensorManager2.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        sensorManager2.registerListener(this, gyroSensor, SensorManager.SENSOR_DELAY_FASTEST);// SENSOR_DELAY_NORMAL
+        // Gravity initialization
+        sensorManager3 = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        gravitySensor = sensorManager3.getDefaultSensor(Sensor.TYPE_GRAVITY);
+        sensorManager3.registerListener(this, gravitySensor, SensorManager.SENSOR_DELAY_FASTEST);// SENSOR_DELAY_NORMAL
+        // Gravity initialization
+        sensorManager4 = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        magneticSensor = sensorManager4.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        sensorManager4.registerListener(this, magneticSensor, SensorManager.SENSOR_DELAY_FASTEST);// SENSOR_DELAY_NORMAL
+
+        // Raw accelerometer sensor initialization
+        sensorManager5 = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        rawAccSensor = sensorManager5.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sensorManager5.registerListener(this, rawAccSensor, SensorManager.SENSOR_DELAY_FASTEST);// SENSOR_DELAY_NORMAL
 
 
         // Setting up initialized datapoints for each series of data
@@ -118,6 +205,8 @@ public class AccelerometerActivity extends AppCompatActivity implements SensorEv
         seriesZ.setColor(Color.BLUE);
         graph.addSeries(seriesZ);
 
+        // file read
+
     }
 
 
@@ -138,69 +227,181 @@ public class AccelerometerActivity extends AppCompatActivity implements SensorEv
                 tiltVal.setText(String.valueOf(tiltAngle));
 
             }
+            if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
+                x_fGyro = event.values[0];
+                y_fGyro = event.values[1];
+                z_fGyro = event.values[2];
+
+                // add data to arraylists
+                gyroListX.add(x_fGyro);
+                gyroListY.add(y_fGyro);
+                gyroListZ.add(z_fGyro);
+
+
+            }
+            if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+                // Get sensor data
+                mX = event.values[0];
+                mY = event.values[1];
+                mZ = event.values[2];
+
+            }
+            if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+                // Get sensor data
+                aX = event.values[0];
+                aY = event.values[1];
+                aZ = event.values[2];
+                // fliter
+                madgwickFilter.filterUpdatedouble(aX, aY, aZ, (double) x_fGyro, (double) y_fGyro, (double) z_fGyro, mX, mY, mZ);
+
+                double[] compensatedGravity = GravityCompensation.CompensateGravity
+                        (new double[]{aX, aY, aZ}, madgwickFilter.getQuaternions());
+
+                // Update the text view
+                xVal.setText(String.valueOf(compensatedGravity[0]));
+                yVal.setText(String.valueOf(compensatedGravity[1]));
+                zVal.setText(String.valueOf(compensatedGravity[2]));
+
+                // add data to arraylists
+                accListMadgwickX.add((float) compensatedGravity[0]);
+                accListMadgwickY.add((float) compensatedGravity[1]);
+                accListMadgwickZ.add((float) compensatedGravity[2]);
+                accListRawX.add((float) aX);
+                accListRawY.add((float) aY);
+                accListRawZ.add((float) aZ);
+
+                bGoSave = true;
+
+
+            }
+
 
             if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
                 // Get sensor data
                 x = event.values[0];
                 y = event.values[1];
                 z = event.values[2];
+
+
                 // Update the text view
                 xVal.setText(String.valueOf(x));
                 yVal.setText(String.valueOf(y));
                 zVal.setText(String.valueOf(z));
+                // display speed
+//                vVal.setText(String.valueOf(velocity));
+
+                // add data to arraylists
+                accListX.add(x);
+                accListY.add(y);
+                accListZ.add(z);
+
+                bGoSave = true;
+
                 // elapsed time
                 end = System.currentTimeMillis();
                 elapsedTime = end - start;
                 start = System.currentTimeMillis();
-
-                // without buffer
-                counterVelocity++;
-                velocity = velocity + y / Math.cos(tiltAngle) * (elapsedTime / 1000.0f);
                 vVal.setText(String.valueOf(elapsedTime));
-                // Add data to series
-//                seriesX.appendData(new DataPoint(counterVelocity, y), true, 100, false);
-//                graph.addSeries(seriesX);
-                if (counterVelocity < 50) {
-                    seriesX.appendData(new DataPoint(counterVelocity, y), true, 100, false);
-                    graph.addSeries(seriesX);
-                    //seriesX.resetData(new DataPoint[]{new DataPoint(0, 0)});
-                    //counterVelocity = 0;
+
+                counter_yAcc++;
+
+                // buffer y_axis acceleration data for further processing
+                if ((!(counter == 1)) && (counter_yAcc < nBufferSize)) {   // First elapsed time is not accurate
+                    //accElapsedTime = accElapsedTime + elapsedTime;
+                    dArrayXacc[counter_yAcc] = x;
+                    dArrayYacc[counter_yAcc] = y;
+                    dArrayZacc[counter_yAcc] = z;
+
+                } else if (!(counter == 1)) // The data size has been reached
+
+                {
+                    int counterZeroAcc = 0;
+                    double[] arrayComp;
+                    double[] movMeanOut = common.calculateMovingAverage(dArrayYacc, nMovMeanSize); // nMovMeanSize
+                    arrayComp = common.accCompensation(movMeanOut);
+
+                    for (int i = 0; i < arrayComp.length; i++) {
+                        if (i < arrayComp.length - 10) {
+                            counterZeroAcc = 0;
+                            for (int k = i; k < i + 10; k++) {
+                                if (Math.abs(movMeanOut[k] - movMeanOut[k + 1]) < 0.02) {
+                                    counterZeroAcc++;
+                                }
+                            }
+                        }
+                    }
+
+                    if (counterZeroAcc > 9) {
+                        velocity = velocity * 0.8;
+                    } else {
+                        for (int i = 0; i < arrayComp.length; i++) {
+                            velocity = velocity + 3.6 * arrayComp[i] / Math.cos(tiltAngle/180*Math.PI) * 0.005;
+                        }
+                    }
+                    //counter clear
+                    counter_yAcc = 0;
+
                 }
 
-
-//                // buffer y_axis acceleration data for further processing
-//                if ((!(counter == 1)) && (counter_yAcc < nBufferSize)) {   // First elapsed time is not accurate
-//                    accElapsedTime = accElapsedTime + elapsedTime;
-//                    array_yAcc[counter_yAcc] = y;
-//                    counter_yAcc++;
-//                } else if (!(counter == 1)) // calculate mean value of y_axis acceleration data buffer
-//                {
-//                    float acc_yAcc = 0;
-//                    for (int i = 0; i < nBufferSize; i++) {
-//                        acc_yAcc = acc_yAcc + array_yAcc[i];
-//                    }
-//                    avg_yAcc = acc_yAcc / nBufferSize;
-//                    velocity = velocity + avg_yAcc / Math.cos(tiltAngle) * (accElapsedTime / 1000.0f);
-//                    counterVelocity++;
-//                    // velocity = velocity + y / Math.cos(tiltAngle) * (elapsedTime / 1000.0f);
-//                    vVal.setText(String.valueOf(accElapsedTime));
-//                    // Add data to series
-//                    seriesX.appendData(new DataPoint(counterVelocity, avg_yAcc), true, 100, false);
-//                    // Add series to graph
-//                    graph.addSeries+=+++++++++++++++++++++++++++++++++++++++////////////////////////////////////////////////////////
-//                    (seriesX);
-//                    if (counterVelocity > 60) {
-//                        seriesX.resetData(new DataPoint[]{new DataPoint(0, 0)});
-//                        counterVelocity = 0;
-//                    }
-//                    // reset
-//                    accElapsedTime = 0;
-//                    counter_yAcc = 0;
-//                }
 
 
             }
 
+        } else if (bGoSave) {
+            if (bSave) {
+                array_xAccMadgwick = new float[accListMadgwickX.size()];
+                array_yAccMadgwick = new float[accListMadgwickY.size()];
+                array_zAccMadgwick = new float[accListMadgwickZ.size()];
+                array_yAccRaw = new float[accListRawY.size()];
+                array_zAccRaw = new float[accListRawZ.size()];
+                array_xAccRaw = new float[accListRawX.size()];
+                array_yAccRaw = new float[accListRawY.size()];
+                array_zAccRaw = new float[accListRawZ.size()];
+                array_xAcc = new float[accListX.size()];
+                array_yAcc = new float[accListY.size()];
+                array_zAcc = new float[accListZ.size()];
+                array_xGyro = new float[gyroListX.size()];
+                array_yGyro = new float[gyroListY.size()];
+                array_zGyro = new float[gyroListZ.size()];
+
+                for (int i = 0; i < accListMadgwickX.size(); i++) {
+                    array_xAccMadgwick[i] = accListMadgwickX.get(i);
+                    array_yAccMadgwick[i] = accListMadgwickY.get(i);
+                    array_zAccMadgwick[i] = accListMadgwickZ.get(i);
+                }
+
+                for (int i = 0; i < accListRawX.size(); i++) {
+                    array_xAccRaw[i] = accListRawX.get(i);
+                    array_yAccRaw[i] = accListRawY.get(i);
+                    array_zAccRaw[i] = accListRawZ.get(i);
+                }
+
+                for (int i = 0; i < accListX.size(); i++) {
+                    array_xAcc[i] = accListX.get(i);
+                    array_yAcc[i] = accListY.get(i);
+                    array_zAcc[i] = accListZ.get(i);
+                }
+
+                for (int i = 0; i < gyroListX.size(); i++) {
+                    array_xGyro[i] = gyroListX.get(i);
+                    array_yGyro[i] = gyroListY.get(i);
+                    array_zGyro[i] = gyroListZ.get(i);
+                }
+                // save data to txt
+                save(DataFileRawX, array_xAccRaw);
+                save(DataFileRawY, array_yAccRaw);
+                save(DataFileRawZ, array_zAccRaw);
+                save(DataFileMadgwickX, array_xAccMadgwick);
+                save(DataFileMadgwickY, array_yAccMadgwick);
+                save(DataFileMadgwickZ, array_zAccMadgwick);
+                save(DataFileX, array_xAcc);
+                save(DataFileY, array_yAcc);
+                save(DataFileZ, array_zAcc);
+                save(DataFileGyroX, array_xGyro);
+                save(DataFileGyroY, array_yGyro);
+                save(DataFileGyroZ, array_zGyro);
+                bSave = false;
+            }
         }
     }
 
@@ -215,6 +416,7 @@ public class AccelerometerActivity extends AppCompatActivity implements SensorEv
         super.onPause();
         sensorManager.unregisterListener(this);
         sensorManager2.unregisterListener(this);
+        sensorManager3.unregisterListener(this);
     }
 
     protected void onResume() {
@@ -222,10 +424,66 @@ public class AccelerometerActivity extends AppCompatActivity implements SensorEv
         super.onResume();
         sensorManager.registerListener(this,
                 sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION),
-                SensorManager.SENSOR_DELAY_NORMAL);   //SENSOR_DELAY_NORMAL
+                SensorManager.SENSOR_DELAY_FASTEST);   //SENSOR_DELAY_NORMAL
         sensorManager2.registerListener(this,
-                sensorManager2.getDefaultSensor(Sensor.TYPE_GRAVITY),
-                SensorManager.SENSOR_DELAY_NORMAL); //SENSOR_DELAY_NORMAL
+                sensorManager2.getDefaultSensor(Sensor.TYPE_GYROSCOPE),
+                SensorManager.SENSOR_DELAY_FASTEST); //SENSOR_DELAY_NORMAL
+        sensorManager3.registerListener(this,
+                sensorManager3.getDefaultSensor(Sensor.TYPE_GRAVITY),
+                SensorManager.SENSOR_DELAY_FASTEST); //SENSOR_DELAY_NORMAL
+        sensorManager4.registerListener(this,
+                sensorManager4.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
+                SensorManager.SENSOR_DELAY_FASTEST); //SENSOR_DELAY_NORMAL
 
     }
+
+    private void save(String FILE_NAME, float[] Data) {
+        String state = Environment.getExternalStorageState();
+        if (!Environment.MEDIA_MOUNTED.equals(state)) {
+            return;
+        }
+        File file = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOWNLOADS), FILE_NAME);
+
+        DataOutputStream fos = null;
+
+        try {
+            file.createNewFile();
+            fos = new DataOutputStream(new FileOutputStream(file, true));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+        for (int i = 0; i < Data.length; i++) {   //int i = 0; i < Data.length; i++)
+            String textData = String.valueOf(Data[i]) + "\n";
+
+            try {
+                //float fnumber = 9.80f;//fos.write(textData.getBytes(StandardCharsets.UTF_8)); //The vector is saved in a txt-file on the device
+                fos.writeBytes(textData);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        try {
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private static byte[] getByteArrayFromByteBuffer(ByteBuffer byteBuffer) {
+        byte[] bytesArray = new byte[byteBuffer.remaining()];
+        byteBuffer.get(bytesArray, 0, bytesArray.length);
+        return bytesArray;
+    }
+
+    public static byte[] float2ByteArray(float value) {
+        return ByteBuffer.allocate(4).putFloat(value).array();
+    }
+
+
 }
+

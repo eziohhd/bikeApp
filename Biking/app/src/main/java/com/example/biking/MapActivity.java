@@ -13,7 +13,6 @@ import android.widget.Button;
 import android.widget.TextView;
 
 
-
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
@@ -29,6 +28,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -83,13 +83,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 
-
 public class MapActivity extends AppCompatActivity implements
         OnMapReadyCallback,
         OnMyLocationButtonClickListener,
         OnMyLocationClickListener,
         ActivityCompat.OnRequestPermissionsResultCallback,
-        SensorEventListener{
+        SensorEventListener {
 
     private static final String TAG = "MapActivity";
 
@@ -107,12 +106,15 @@ public class MapActivity extends AppCompatActivity implements
     private Location currentLocation;
     View mapView;
 
-    Button startButton,endButton;
-    Button resumeButton,pauseButton;
+    Button startButton, endButton;
+    Button resumeButton, pauseButton;
     KdGaugeView speedoMeterView, stopWatchView, distanceMeterView, energyMeterView;
     private int seconds = 0;
     private boolean theFirst = true;
     private float speed = 0;
+    private double distance = 0;
+    private double bodyWeight;//kg
+    private double caloriesBurned = 0;
     private Polyline lineRoute;
     private PolylineOptions lineOptions;
     List<LatLng> points;
@@ -228,8 +230,8 @@ public class MapActivity extends AppCompatActivity implements
                 collectValues = false;
                 resumeButton.setVisibility(View.VISIBLE);
                 pauseButton.setVisibility(View.INVISIBLE);
-        }
-    });
+            }
+        });
 
         resumeButton.setOnClickListener(view -> {
             if (!collectValues) {
@@ -293,7 +295,6 @@ public class MapActivity extends AppCompatActivity implements
             }
 
 
-
             if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
                 // Get sensor data
                 x = event.values[0];
@@ -340,21 +341,29 @@ public class MapActivity extends AppCompatActivity implements
                             }
                         }
                     }
-
+                    // velocity and distance calculation
                     if (counterZeroAcc > 9) {
                         velocity = velocity * 0.8;
                     } else {
                         for (int i = 0; i < arrayComp.length; i++) {
-                            velocity = velocity + 3.6 * arrayComp[i] / Math.cos(tiltAngle/180*Math.PI) * 0.005;
+                            if (velocity < 0) {
+                                velocity = 0;
+                            } else {
+                                velocity = velocity + 3.6 * arrayComp[i] / Math.cos(tiltAngle / 180 * Math.PI) * 0.005;
+                            }
+                            distance = distance + velocity / 3.6 * 0.005;
+                            caloriesBurned = common.caloriesBurned(bodyWeight, velocity, 0.005);
+
                         }
 
                     }
                     speedoMeterView.setSpeed((float) velocity);
+                    speedoMeterView.setDistance((float) distance);
+                    speedoMeterView.setEnergy((int) caloriesBurned);
                     //counter clear
                     counter_yAcc = 0;
 
                 }
-
 
 
             }
@@ -493,15 +502,15 @@ public class MapActivity extends AppCompatActivity implements
         Log.d(TAG, "onMapReady: map is ready");
         mMap = googleMap;
 
-        if (mapView != null && mapView.findViewById(Integer.parseInt("1")) != null){
+        if (mapView != null && mapView.findViewById(Integer.parseInt("1")) != null) {
             //get the button view
             View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
             //place it on the bottom right
             RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)
                     locationButton.getLayoutParams();
-            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP,0);
-            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM,RelativeLayout.TRUE);
-            layoutParams.setMargins(0,0,30,30);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+            layoutParams.setMargins(0, 0, 30, 30);
         }
 
         if (mLocationPermissionsGranted) {
@@ -549,7 +558,7 @@ public class MapActivity extends AppCompatActivity implements
 //        test2.setText(R.string.textTitle);
 
         Button cancelButton = popupView.findViewById(R.id.cancelButton);
-        cancelButton .setOnClickListener(v -> popupWindow.dismiss());
+        cancelButton.setOnClickListener(v -> popupWindow.dismiss());
 
         Button confirmButton = popupView.findViewById(R.id.confirmButton);
         confirmButton.setOnClickListener(v -> {
@@ -567,27 +576,25 @@ public class MapActivity extends AppCompatActivity implements
         });
 
 
-
     }
 
-    private void runTimer()
-    {
+    private void runTimer() {
         final Handler handler = new Handler();
 
         handler.post(new Runnable() {
             @Override
             public void run() {
-                int minutes = (seconds % 3600) /60;
-                int secs =  seconds % 60;
+                int minutes = (seconds % 3600) / 60;
+                int secs = seconds % 60;
                 stopWatchView.setMinute(minutes);
                 stopWatchView.setSecond(secs);
-                    if (collectValues) {
-                        theFirst = false;
-                        getDeviceLocation();
-                        if (currentLocation != null && !currentLocation.equals("")) {
+                if (collectValues) {
+                    theFirst = false;
+                    getDeviceLocation();
+                    if (currentLocation != null && !currentLocation.equals("")) {
 //                            speed = currentLocation.getSpeed();
 //                            speedoMeterView.setSpeed(speed);
-                            LatLng newPoint = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+                        LatLng newPoint = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
                         points = lineRoute.getPoints();
                         points.add(newPoint);
                         lineRoute.setPoints(points);
@@ -602,7 +609,6 @@ public class MapActivity extends AppCompatActivity implements
     }
 
 
-
 //    public void onTaskDone(Object... values) {
 //        if (currentPolyline != null)
 //            currentPolyline.remove();
@@ -610,33 +616,33 @@ public class MapActivity extends AppCompatActivity implements
 //    }
 
 
-    private void init(){
+    private void init() {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
                 String location = searchView.getQuery().toString();
-                List<Address>  addressList = null;
+                List<Address> addressList = null;
 
                 if (location != null && !location.equals("")) {
-                    Geocoder geocoder =new Geocoder(MapActivity.this);
+                    Geocoder geocoder = new Geocoder(MapActivity.this);
                     try {
                         addressList = geocoder.getFromLocationName(location, 1);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    if(addressList.size() > 0){
+                    if (addressList.size() > 0) {
                         Address address = addressList.get(0);
-                        LatLng latLng1 = new LatLng(address.getLatitude(),address.getLongitude());
+                        LatLng latLng1 = new LatLng(address.getLatitude(), address.getLongitude());
 
                         mMap.clear();
                         mMap.addMarker(new MarkerOptions().position(latLng1).title(location));
-                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng1,15));
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng1, 15));
 
                         Log.d(TAG, "geoLocate: found a location: " + address.toString());
                         //Toast.makeText(this, address.toString(), Toast.LENGTH_SHORT).show();
 
                     } else {
-                        Toast.makeText(MapActivity.this,"Address not found", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MapActivity.this, "Address not found", Toast.LENGTH_SHORT).show();
                     }
                 }
                 return false;
@@ -649,67 +655,66 @@ public class MapActivity extends AppCompatActivity implements
         });
     }
 
-    private void getDeviceLocation(){
+    private void getDeviceLocation() {
         Log.d(TAG, "getDeviceLocation: getting the devices current location");
 
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
-        try{
-            if(mLocationPermissionsGranted){
+        try {
+            if (mLocationPermissionsGranted) {
                 final Task location = mFusedLocationProviderClient.getLastLocation();
                 location.addOnCompleteListener(new OnCompleteListener() {
                     @Override
                     public void onComplete(@NonNull Task task) {
-                        if(task.isSuccessful()){
+                        if (task.isSuccessful()) {
                             Log.d(TAG, "onComplete: found location!");
                             currentLocation = (Location) task.getResult();
-                            if(theFirst) {
+                            if (theFirst) {
                                 moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()),
                                         DEFAULT_ZOOM);
                             }
-                        }else{
+                        } else {
                             Log.d(TAG, "onComplete: current location is null");
                             Toast.makeText(MapActivity.this, "unable to get current location", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
             }
-        }catch (SecurityException e){
-            Log.e(TAG, "getDeviceLocation: SecurityException: " + e.getMessage() );
+        } catch (SecurityException e) {
+            Log.e(TAG, "getDeviceLocation: SecurityException: " + e.getMessage());
         }
     }
 
 
-
-    private void moveCamera(LatLng latLng, float zoom){
-        Log.d(TAG, "moveCamera: moving the camera to: lat: " + latLng.latitude + ", lng: " + latLng.longitude );
+    private void moveCamera(LatLng latLng, float zoom) {
+        Log.d(TAG, "moveCamera: moving the camera to: lat: " + latLng.latitude + ", lng: " + latLng.longitude);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
     }
 
 
-    private void initMap(){
+    private void initMap() {
         Log.d(TAG, "initMap: initializing map");
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(MapActivity.this);
     }
 
-    private void getLocationPermission(){
+    private void getLocationPermission() {
         Log.d(TAG, "getLocationPermission: getting location permissions");
         String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION};
 
-        if(ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
-            if(ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                    COURSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                    COURSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 mLocationPermissionsGranted = true;
                 initMap();
-            }else{
+            } else {
                 ActivityCompat.requestPermissions(this,
                         permissions,
                         LOCATION_PERMISSION_REQUEST_CODE);
             }
-        }else{
+        } else {
             ActivityCompat.requestPermissions(this,
                     permissions,
                     LOCATION_PERMISSION_REQUEST_CODE);

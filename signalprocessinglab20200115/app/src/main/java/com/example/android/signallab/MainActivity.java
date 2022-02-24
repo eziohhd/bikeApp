@@ -7,6 +7,10 @@ import android.widget.Button;
 import android.view.View;
 import android.view.View.OnClickListener;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
+
 public class MainActivity extends AppCompatActivity {
     private Button accButton;
     private Button recButton;
@@ -45,4 +49,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
+
+
 }
