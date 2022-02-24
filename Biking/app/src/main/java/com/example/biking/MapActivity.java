@@ -151,6 +151,8 @@ public class MapActivity extends AppCompatActivity implements
     float array_xGyro[];
     float array_yGyro[];
     float array_zGyro[];
+    float array_v[];
+    float array_vgps[];
 
     // elapsed time
     long start;
@@ -190,6 +192,8 @@ public class MapActivity extends AppCompatActivity implements
     ArrayList<Float> gyroListX = new ArrayList<Float>();
     ArrayList<Float> gyroListY = new ArrayList<Float>();
     ArrayList<Float> gyroListZ = new ArrayList<Float>();
+    ArrayList<Float> vList = new ArrayList<Float>();
+    ArrayList<Float> vgpsList = new ArrayList<Float>();
     boolean bGoSave = false;
 
     @Override
@@ -358,6 +362,9 @@ public class MapActivity extends AppCompatActivity implements
                         }
 
                     }
+                    vList.add((float)velocity);
+                    float velocity_GPS = currentLocation.getSpeed();
+                    vgpsList.add(velocity_GPS);
                     speedoMeterView.setSpeed((float) velocity);
                     distanceMeterView.setDistance((float) distance);
                     energyMeterView.setEnergy((int) caloriesBurned);
@@ -409,7 +416,15 @@ public class MapActivity extends AppCompatActivity implements
                     array_yGyro[i] = gyroListY.get(i);
                     array_zGyro[i] = gyroListZ.get(i);
                 }
+                for (int i = 0; i < vList.size(); i++) {
+                    array_v[i] = vList.get(i);
+                }
+                for (int i = 0; i < vgpsList.size(); i++) {
+                    array_vgps[i] = vgpsList.get(i);
+                }
                 // save data to txt
+                save("DataFilev", array_v);
+                save("DataFilevgps", array_vgps);
 //                save(DataFileRawX, array_xAccRaw);
 //                save(DataFileRawY, array_yAccRaw);
 //                save(DataFileRawZ, array_zAccRaw);
@@ -458,43 +473,43 @@ public class MapActivity extends AppCompatActivity implements
                 SensorManager.SENSOR_DELAY_FASTEST); //SENSOR_DELAY_NORMAL
 
     }
-//
-//    private void save(String FILE_NAME, float[] Data) {
-//        String state = Environment.getExternalStorageState();
-//        if (!Environment.MEDIA_MOUNTED.equals(state)) {
-//            return;
-//        }
-//        File file = new File(Environment.getExternalStoragePublicDirectory(
-//                Environment.DIRECTORY_DOWNLOADS), FILE_NAME);
-//
-//        DataOutputStream fos = null;
-//
-//        try {
-//            file.createNewFile();
-//            fos = new DataOutputStream(new FileOutputStream(file, true));
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return;
-//        }
-//
-//        for (int i = 0; i < Data.length; i++) {   //int i = 0; i < Data.length; i++)
-//            String textData = String.valueOf(Data[i]) + "\n";
-//
-//            try {
-//                //float fnumber = 9.80f;//fos.write(textData.getBytes(StandardCharsets.UTF_8)); //The vector is saved in a txt-file on the device
-//                fos.writeBytes(textData);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        try {
-//            fos.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//    }
+
+    private void save(String FILE_NAME, float[] Data) {
+        String state = Environment.getExternalStorageState();
+        if (!Environment.MEDIA_MOUNTED.equals(state)) {
+            return;
+        }
+        File file = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOWNLOADS), FILE_NAME);
+
+        DataOutputStream fos = null;
+
+        try {
+            file.createNewFile();
+            fos = new DataOutputStream(new FileOutputStream(file, true));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+        for (int i = 0; i < Data.length; i++) {   //int i = 0; i < Data.length; i++)
+            String textData = String.valueOf(Data[i]) + "\n";
+
+            try {
+                //float fnumber = 9.80f;//fos.write(textData.getBytes(StandardCharsets.UTF_8)); //The vector is saved in a txt-file on the device
+                fos.writeBytes(textData);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        try {
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
 
 
     @Override
@@ -663,20 +678,17 @@ public class MapActivity extends AppCompatActivity implements
         try {
             if (mLocationPermissionsGranted) {
                 final Task location = mFusedLocationProviderClient.getLastLocation();
-                location.addOnCompleteListener(new OnCompleteListener() {
-                    @Override
-                    public void onComplete(@NonNull Task task) {
-                        if (task.isSuccessful()) {
-                            Log.d(TAG, "onComplete: found location!");
-                            currentLocation = (Location) task.getResult();
-                            if (theFirst) {
-                                moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()),
-                                        DEFAULT_ZOOM);
-                            }
-                        } else {
-                            Log.d(TAG, "onComplete: current location is null");
-                            Toast.makeText(MapActivity.this, "unable to get current location", Toast.LENGTH_SHORT).show();
+                location.addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d(TAG, "onComplete: found location!");
+                        currentLocation = (Location) task.getResult();
+                        if (theFirst) {
+                            moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()),
+                                    DEFAULT_ZOOM);
                         }
+                    } else {
+                        Log.d(TAG, "onComplete: current location is null");
+                        Toast.makeText(MapActivity.this, "unable to get current location", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
