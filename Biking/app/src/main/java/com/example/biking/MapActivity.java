@@ -223,6 +223,7 @@ public class MapActivity extends AppCompatActivity implements
         stopWatchView = findViewById(R.id.timeMeter);
         distanceMeterView = findViewById(R.id.distanceMeter);
         speedoMeterView = findViewById(R.id.speedMeter);
+        energyMeterView = findViewById(R.id.energyMeter);
 
 
         pauseButton.setOnClickListener(view -> {
