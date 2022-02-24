@@ -341,7 +341,7 @@ public class KdGaugeView extends View {
         //Rotate canvas again to write the text in correct orientation
         canvas.rotate(+225, mCircleCenterX, mCircleCenterY);
 
-        canvas.drawText("" + (int) mCurrentSpeed+" M", mCircleCenterX, mCircleCenterY - ((mSpeedTextPaint.descent() + mSpeedTextPaint.ascent()) / 2), mSpeedTextPaint);
+        canvas.drawText("" + (int) mDistance+" M", mCircleCenterX, mCircleCenterY - ((mSpeedTextPaint.descent() + mSpeedTextPaint.ascent()) / 2), mSpeedTextPaint);
         float x = mCircleCenterX;
         float y = (float) (mCircleCenterY + mDotedCircleRadius * Math.sin(Math.toRadians(-225)));
 
@@ -479,7 +479,8 @@ public class KdGaugeView extends View {
 
     public void setDistance(float mDistance) {
         this.mDistance = mDistance;
-        startProgressAnimation(mDistance);
+//        startProgressAnimation(mDistance);
+        invalidate();
     }
 
     public void setMinute(int mMinute) {
@@ -487,16 +488,15 @@ public class KdGaugeView extends View {
         invalidate();
     }
 
-    public void secChange() {
-        mCurrentSec = mSecond;
-    }
+
     public void setSecond(int mSecond) {
         this.mSecond= mSecond;
-        secChange();
+        invalidate();
     }
 
     public void setEnergy(int mEnergy) {
         this.mEnergy= mEnergy;
+        invalidate();
     }
 
 
