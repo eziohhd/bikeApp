@@ -158,7 +158,7 @@ public class MapActivity extends AppCompatActivity implements
     long elapsedTime;
     long accElapsedTime;
 
-    // Gyroscope&graavity
+    // Gyroscope&gravity
     SensorManager sensorManager2;
     SensorManager sensorManager3;
     SensorManager sensorManager4;
@@ -515,7 +515,7 @@ public class MapActivity extends AppCompatActivity implements
 
         if (mLocationPermissionsGranted) {
             getDeviceLocation();
-            lineOptions = new PolylineOptions().width(5).color(Color.RED);
+            lineOptions = new PolylineOptions().width(5).color(android.R.color.holo_purple);
             lineRoute = mMap.addPolyline(lineOptions);
 
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -571,7 +571,7 @@ public class MapActivity extends AppCompatActivity implements
             seconds = 0;
             stopWatchView.setMinute(0);
             stopWatchView.setSecond(0);
-            //As an example, display the message
+
             popupWindow.dismiss();
         });
 
@@ -592,8 +592,7 @@ public class MapActivity extends AppCompatActivity implements
                     theFirst = false;
                     getDeviceLocation();
                     if (currentLocation != null && !currentLocation.equals("")) {
-//                            speed = currentLocation.getSpeed();
-//                            speedoMeterView.setSpeed(speed);
+
                         LatLng newPoint = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
                         points = lineRoute.getPoints();
                         points.add(newPoint);
