@@ -358,8 +358,8 @@ public class MapActivity extends AppCompatActivity implements
 
                     }
                     speedoMeterView.setSpeed((float) velocity);
-                    speedoMeterView.setDistance((float) distance);
-                    speedoMeterView.setEnergy((int) caloriesBurned);
+                    distanceMeterView.setDistance((float) distance);
+                    energyMeterView.setEnergy((int) caloriesBurned);
                     //counter clear
                     counter_yAcc = 0;
 
