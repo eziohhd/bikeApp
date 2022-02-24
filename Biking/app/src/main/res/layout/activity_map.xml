@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="409dp"
+        android:layout_height="686dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="45dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginBottom="0dp"
+        tools:context=".MapsActivity" />
+
+    <Button
+        android:id="@+id/btnStart"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentEnd="false"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center"
+        android:layout_marginEnd="185dp"
+        android:layout_marginBottom="97dp"
+        android:background="@drawable/circlebutton"
+        android:drawableLeft="@drawable/ic_baseline_play"
+        android:elevation="5dp"
+        android:paddingLeft="10dp" />
+
+    <SearchView
+        android:id="@+id/sv_location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:background="@drawable/bg_ground"
+        android:elevation="5dp"
+        android:iconifiedByDefault="false"
+        android:queryHint="Search..." />
+
+
+    <com.example.biking.KdGaugeView
+        android:id="@+id/speedMeter"
+        android:layout_width="155dp"
+        android:layout_height="125dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_gravity='center'
+        android:layout_marginStart="19dp"
+        android:layout_marginTop="93dp"
+        android:layout_marginEnd="237dp"
+        android:background="@drawable/bg_meter"
+        android:backgroundTint="@color/white"
+        android:elevation="5dp"
+        app:animationTime="2000"
+        app:maxSpeed="50"
+        app:mode="speed"
+        app:speedDialRingWidth='3dp'
+        app:speedLimitTextSize='10dp'
+        app:speedTextColor="@color/purple_200"
+        app:speedTextSize='20dp'
+        app:speed_limit="50"
+        app:unitOfMeasurement="Km/Hr"
+        app:unitOfMeasurementTextColor="@color/purple_200"
+        app:unitOfMeasurementTextSize='10dp' />
+
+    <com.example.biking.KdGaugeView
+        android:id="@+id/timeMeter"
+        android:layout_width="90dp"
+        android:layout_height="50dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="17dp"
+        android:layout_marginBottom="2dp"
+        android:elevation="6dp"
+        app:speedTextColor="@color/white"
+        app:speedTextSize='20dp'
+        app:unitOfMeasurementTextColor="@color/purple_200"
+        app:unitOfMeasurementTextSize='15dp' />
+
+    <com.example.biking.KdGaugeView
+        android:id="@+id/distanceMeter"
+        android:layout_width="90dp"
+        android:layout_height="50dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="21dp"
+        android:layout_marginBottom="2dp"
+        android:elevation="6dp"
+        app:mode="distance"
+        app:speedTextColor="@color/white"
+        app:speedTextSize='20dp'
+        app:unitOfMeasurementTextColor="@color/purple_200"
+
+        app:unitOfMeasurementTextSize='15dp' />
+
+    <com.example.biking.KdGaugeView
+        android:id="@+id/energyMeter"
+        android:layout_width="90dp"
+        android:layout_height="50dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="154dp"
+        android:layout_marginEnd="153dp"
+        android:layout_marginBottom="0dp"
+        android:elevation="6dp"
+        app:mode="energy"
+        app:speedTextColor="@color/white"
+        app:speedTextSize='20dp'
+        app:unitOfMeasurementTextColor="@color/white"
+        app:unitOfMeasurementTextSize='15dp' />
+
+    <Button
+        android:id="@+id/btnPause"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center"
+        android:layout_marginEnd="118dp"
+        android:layout_marginBottom="97dp"
+        android:background="@drawable/circlebutton"
+        android:drawableLeft="@drawable/ic_baseline_pause"
+        android:elevation="5dp"
+        android:paddingLeft="10dp" />
+
+    <Button
+        android:id="@+id/btnResume"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center"
+        android:layout_marginEnd="118dp"
+        android:layout_marginBottom="97dp"
+        android:background="@drawable/circlebutton"
+        android:drawableLeft="@drawable/ic_baseline_play"
+        android:elevation="5dp"
+        android:paddingLeft="10dp" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnEnd"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center"
+        android:layout_marginStart="119dp"
+        android:layout_marginBottom="97dp"
+        android:background="@drawable/circlebuttonstop"
+        android:drawableLeft="@drawable/ic_baseline_stop"
+        android:elevation="5dp"
+        android:paddingLeft="10dp" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="76dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginBottom="0dp"
+        android:elevation="5dp"
+        android:background="@drawable/bg_bar" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="40dp"
+        android:layout_marginBottom="46dp"
+        android:textColor="@color/white"
+        android:elevation="5dp"
+
+        android:text="Distance" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="46dp"
+        android:textColor="@color/white"
+        android:elevation="5dp"
+
+        android:text="Energy" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="47dp"
+        android:layout_marginBottom="46dp"
+        android:elevation="5dp"
+        android:text="Time"
+
+        android:textColor="@color/white" />
+
+
+
+
+
+</RelativeLayout>
