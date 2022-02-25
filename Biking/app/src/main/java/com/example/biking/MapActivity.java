@@ -307,12 +307,12 @@ public class MapActivity extends AppCompatActivity implements
                 z = event.values[2];
 
 
-                // add data to arraylists
-                accListX.add(x);
-                accListY.add(y);
-                accListZ.add(z);
-
-                bGoSave = true;
+//                // add data to arraylists
+//                accListX.add(x);
+//                accListY.add(y);
+//                accListZ.add(z);
+//
+//                bGoSave = true;
 
                 // elapsed time
                 end = System.currentTimeMillis();
