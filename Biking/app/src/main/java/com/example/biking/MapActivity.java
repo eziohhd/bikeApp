@@ -307,12 +307,12 @@ public class MapActivity extends AppCompatActivity implements
                 z = event.values[2];
 
 
-//                // add data to arraylists
+                // add data to arraylists
 //                accListX.add(x);
 //                accListY.add(y);
 //                accListZ.add(z);
-//
-//                bGoSave = true;
+
+                bGoSave = true;
 
                 // elapsed time
                 end = System.currentTimeMillis();
@@ -378,44 +378,46 @@ public class MapActivity extends AppCompatActivity implements
 
         } else if (bGoSave) {
             if (bSave) {
-                array_xAccMadgwick = new float[accListMadgwickX.size()];
-                array_yAccMadgwick = new float[accListMadgwickY.size()];
-                array_zAccMadgwick = new float[accListMadgwickZ.size()];
-                array_yAccRaw = new float[accListRawY.size()];
-                array_zAccRaw = new float[accListRawZ.size()];
-                array_xAccRaw = new float[accListRawX.size()];
-                array_yAccRaw = new float[accListRawY.size()];
-                array_zAccRaw = new float[accListRawZ.size()];
-                array_xAcc = new float[accListX.size()];
-                array_yAcc = new float[accListY.size()];
-                array_zAcc = new float[accListZ.size()];
-                array_xGyro = new float[gyroListX.size()];
-                array_yGyro = new float[gyroListY.size()];
-                array_zGyro = new float[gyroListZ.size()];
+//                array_xAccMadgwick = new float[accListMadgwickX.size()];
+//                array_yAccMadgwick = new float[accListMadgwickY.size()];
+//                array_zAccMadgwick = new float[accListMadgwickZ.size()];
+//                array_yAccRaw = new float[accListRawY.size()];
+//                array_zAccRaw = new float[accListRawZ.size()];
+//                array_xAccRaw = new float[accListRawX.size()];
+//                array_yAccRaw = new float[accListRawY.size()];
+//                array_zAccRaw = new float[accListRawZ.size()];
+//                array_xAcc = new float[accListX.size()];
+//                array_yAcc = new float[accListY.size()];
+//                array_zAcc = new float[accListZ.size()];
+//                array_xGyro = new float[gyroListX.size()];
+//                array_yGyro = new float[gyroListY.size()];
+//                array_zGyro = new float[gyroListZ.size()];
+                array_v = new float[vList.size()];
+                array_vgps = new float[vgpsList.size()];
 
-                for (int i = 0; i < accListMadgwickX.size(); i++) {
-                    array_xAccMadgwick[i] = accListMadgwickX.get(i);
-                    array_yAccMadgwick[i] = accListMadgwickY.get(i);
-                    array_zAccMadgwick[i] = accListMadgwickZ.get(i);
-                }
+//                for (int i = 0; i < accListMadgwickX.size(); i++) {
+//                    array_xAccMadgwick[i] = accListMadgwickX.get(i);
+//                    array_yAccMadgwick[i] = accListMadgwickY.get(i);
+//                    array_zAccMadgwick[i] = accListMadgwickZ.get(i);
+//                }
 
-                for (int i = 0; i < accListRawX.size(); i++) {
-                    array_xAccRaw[i] = accListRawX.get(i);
-                    array_yAccRaw[i] = accListRawY.get(i);
-                    array_zAccRaw[i] = accListRawZ.get(i);
-                }
-
-                for (int i = 0; i < accListX.size(); i++) {
-                    array_xAcc[i] = accListX.get(i);
-                    array_yAcc[i] = accListY.get(i);
-                    array_zAcc[i] = accListZ.get(i);
-                }
-
-                for (int i = 0; i < gyroListX.size(); i++) {
-                    array_xGyro[i] = gyroListX.get(i);
-                    array_yGyro[i] = gyroListY.get(i);
-                    array_zGyro[i] = gyroListZ.get(i);
-                }
+//                for (int i = 0; i < accListRawX.size(); i++) {
+//                    array_xAccRaw[i] = accListRawX.get(i);
+//                    array_yAccRaw[i] = accListRawY.get(i);
+//                    array_zAccRaw[i] = accListRawZ.get(i);
+//                }
+//
+//                for (int i = 0; i < accListX.size(); i++) {
+//                    array_xAcc[i] = accListX.get(i);
+//                    array_yAcc[i] = accListY.get(i);
+//                    array_zAcc[i] = accListZ.get(i);
+//                }
+//
+//                for (int i = 0; i < gyroListX.size(); i++) {
+//                    array_xGyro[i] = gyroListX.get(i);
+//                    array_yGyro[i] = gyroListY.get(i);
+//                    array_zGyro[i] = gyroListZ.get(i);
+//                }
                 for (int i = 0; i < vList.size(); i++) {
                     array_v[i] = vList.get(i);
                 }
@@ -423,8 +425,8 @@ public class MapActivity extends AppCompatActivity implements
                     array_vgps[i] = vgpsList.get(i);
                 }
                 // save data to txt
-                save("DataFilev", array_v);
-                save("DataFilevgps", array_vgps);
+                save("DataFilev.txt", array_v);
+                save("DataFilevgps.txt", array_vgps);
 //                save(DataFileRawX, array_xAccRaw);
 //                save(DataFileRawY, array_yAccRaw);
 //                save(DataFileRawZ, array_zAccRaw);
