@@ -357,6 +357,7 @@ public class MapActivity extends AppCompatActivity implements
                                 velocity = velocity + 3.6 * arrayComp[i] / Math.cos(tiltAngle / 180 * Math.PI) * 0.005;
                             }
                             distance = distance + velocity / 3.6 * 0.005;
+                            bodyWeight = getIntent().getDoubleExtra("weight",0);
                             caloriesBurned = common.caloriesBurned(bodyWeight, velocity, 0.005);
 
                         }

@@ -4,9 +4,11 @@ import android.app.Dialog;
 import android.content.Intent;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -25,17 +27,17 @@ public class MainActivity extends AppCompatActivity  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        final String apiKey = BuildConfig.MAPS_API_KEY;
-//
-//        if (apiKey.equals("")) {
-//            Toast.makeText(this, getString(R.string.error_api_key), Toast.LENGTH_LONG).show();
-//            return;
-//        }
-//
-//        // Setup Places Client
-//        if (!Places.isInitialized()) {
-//            Places.initialize(getApplicationContext(), apiKey);
-//        }
+        final String apiKey = BuildConfig.MAPS_API_KEY;
+
+        if (apiKey.equals("")) {
+            Toast.makeText(this, getString(R.string.error_api_key), Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        // Setup Places Client
+        if (!Places.isInitialized()) {
+            Places.initialize(getApplicationContext(), apiKey);
+        }
 
         if(isServicesOK()){
             init();
@@ -44,13 +46,50 @@ public class MainActivity extends AppCompatActivity  {
 
     private void init(){
         Button btnMap = (Button) findViewById(R.id.btnMap);
+        EditText editWeight = (EditText) findViewById(R.id.editWeight);
+
+
         btnMap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, MapActivity.class);
-                startActivity(intent);
+                String weight = editWeight.getText().toString();
+                if(isNumeric(weight)) {
+                    System.out.println("String is numeric!");
+                    // Do something
+                    intent.putExtra( "weight", Double.valueOf(weight));
+                    startActivity(intent);
+                    editWeight.setText("");
+
+                } else {
+                    System.out.println("String is not numeric.");
+                    Toast.makeText(MainActivity.this, "Input is not a number", Toast.LENGTH_LONG).show();
+                    editWeight.setText("");
+                }
+
+//
+
             }
         });
+    }
+
+    public static boolean isNumeric(String string) {
+        double doubleValue;
+
+        System.out.println(String.format("Parsing string: \"%s\"", string));
+
+        if(string == null || string.equals("")) {
+            System.out.println("String cannot be parsed, it is null or empty.");
+            return false;
+        }
+
+        try {
+            doubleValue = Double.parseDouble(string);
+            return true;
+        } catch (NumberFormatException e) {
+            System.out.println("Input String cannot be parsed to Double.");
+        }
+        return false;
     }
 
     public boolean isServicesOK(){
