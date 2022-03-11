@@ -211,16 +211,8 @@ public class MapActivity extends AppCompatActivity implements
         counterVelocity = 0;
         accElapsedTime = 0;
         counterGravity = 0;
-
+        //initializing buttons and gauge views
         startButton = findViewById(R.id.btnStart);
-        startButton.setOnClickListener(view -> {
-            collectValues = true;
-            startButton.setVisibility(View.INVISIBLE);
-            resumeButton.setVisibility(View.INVISIBLE);
-            pauseButton.setVisibility(View.VISIBLE);
-            endButton.setVisibility(View.VISIBLE);
-        });
-
         pauseButton = findViewById(R.id.btnPause);
         resumeButton = findViewById(R.id.btnResume);
         endButton = findViewById(R.id.btnEnd);
@@ -233,7 +225,14 @@ public class MapActivity extends AppCompatActivity implements
         speedoMeterView = findViewById(R.id.speedMeter);
         energyMeterView = findViewById(R.id.energyMeter);
 
-
+        //Registering button listener
+        startButton.setOnClickListener(view -> {
+            collectValues = true;
+            startButton.setVisibility(View.INVISIBLE);
+            resumeButton.setVisibility(View.INVISIBLE);
+            pauseButton.setVisibility(View.VISIBLE);
+            endButton.setVisibility(View.VISIBLE);
+        });
         pauseButton.setOnClickListener(view -> {
             if (collectValues) {
                 collectValues = false;
@@ -241,7 +240,6 @@ public class MapActivity extends AppCompatActivity implements
                 pauseButton.setVisibility(View.INVISIBLE);
             }
         });
-
         resumeButton.setOnClickListener(view -> {
             if (!collectValues) {
                 collectValues = true;
@@ -249,6 +247,7 @@ public class MapActivity extends AppCompatActivity implements
                 resumeButton.setVisibility(View.INVISIBLE);
             }
         });
+        endButton.setOnClickListener(view -> showPopupWindow(view));
 
         // Initializing the sensor manager with an accelerometer, and registering a listener.
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -272,7 +271,7 @@ public class MapActivity extends AppCompatActivity implements
         rawAccSensor = sensorManager5.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorManager5.registerListener(this, rawAccSensor, SensorManager.SENSOR_DELAY_FASTEST);// SENSOR_DELAY_NORMAL
 
-        endButton.setOnClickListener(view -> showPopupWindow(view));
+
 
         runTimer();
 
@@ -281,10 +280,7 @@ public class MapActivity extends AppCompatActivity implements
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
-
         mapFragment.getMapAsync(this);
-
-    // save file
 
     }
 
@@ -547,7 +543,6 @@ public class MapActivity extends AppCompatActivity implements
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-//        Toast.makeText(this, "Map is Ready", Toast.LENGTH_SHORT).show();
         Log.d(TAG, "onMapReady: map is ready");
         mMap = googleMap;
 
@@ -578,8 +573,6 @@ public class MapActivity extends AppCompatActivity implements
             mMap.setOnMyLocationClickListener(this);
             mMap.setMyLocationEnabled(true);
             init();
-
-
         }
     }
 
@@ -605,7 +598,6 @@ public class MapActivity extends AppCompatActivity implements
 
         //Initialize the elements of our window, install the handler
         TextView test2 = popupView.findViewById(R.id.titleText);
-//        test2.setText(R.string.textTitle);
 
         Button cancelButton = popupView.findViewById(R.id.cancelButton);
         cancelButton.setOnClickListener(v -> popupWindow.dismiss());
@@ -633,7 +625,7 @@ public class MapActivity extends AppCompatActivity implements
 
 
     }
-
+//Update timer and lineRoute
     private void runTimer() {
         final Handler handler = new Handler();
 
@@ -648,7 +640,6 @@ public class MapActivity extends AppCompatActivity implements
                     theFirst = false;
                     getDeviceLocation();
                     if (currentLocation != null && !currentLocation.equals("")) {
-
                         LatLng newPoint = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
                         points = lineRoute.getPoints();
                         points.add(newPoint);
@@ -658,19 +649,13 @@ public class MapActivity extends AppCompatActivity implements
                 if (collectValues) {
                     seconds++;
                 }
+                //Get called every second
                 handler.postDelayed(this, 1000);
             }
         });
     }
 
-
-//    public void onTaskDone(Object... values) {
-//        if (currentPolyline != null)
-//            currentPolyline.remove();
-//        currentPolyline = mMap.addPolyline((PolylineOptions) values[0]);
-//    }
-
-
+//SearchView listener
     private void init() {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -709,12 +694,10 @@ public class MapActivity extends AppCompatActivity implements
             }
         });
     }
-
+// Get user's current location
     private void getDeviceLocation() {
         Log.d(TAG, "getDeviceLocation: getting the devices current location");
-
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-
         try {
             if (mLocationPermissionsGranted) {
                 final Task location = mFusedLocationProviderClient.getLastLocation();
@@ -810,6 +793,4 @@ public class MapActivity extends AppCompatActivity implements
             }
         }
     }
-
-
 }

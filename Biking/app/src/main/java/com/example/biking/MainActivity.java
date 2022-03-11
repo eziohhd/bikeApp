@@ -47,8 +47,6 @@ public class MainActivity extends AppCompatActivity  {
     private void init(){
         Button btnMap = (Button) findViewById(R.id.btnMap);
         EditText editWeight = (EditText) findViewById(R.id.editWeight);
-
-
         btnMap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -56,11 +54,10 @@ public class MainActivity extends AppCompatActivity  {
                 String weight = editWeight.getText().toString();
                 if(isNumeric(weight)) {
                     System.out.println("String is numeric!");
-                    // Do something
+                    //Pass the weight to the next activity
                     intent.putExtra( "weight", Double.valueOf(weight));
                     startActivity(intent);
                     editWeight.setText("");
-
                 } else {
                     System.out.println("String is not numeric.");
                     Toast.makeText(MainActivity.this, "Input is not a number", Toast.LENGTH_LONG).show();
@@ -72,7 +69,7 @@ public class MainActivity extends AppCompatActivity  {
             }
         });
     }
-
+    //Check if the input is numeric or not
     public static boolean isNumeric(String string) {
         double doubleValue;
 

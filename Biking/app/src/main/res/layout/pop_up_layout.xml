@@ -28,7 +28,6 @@
                 android:textStyle="bold"
                 android:padding="10dp"/>
 
-
             <Button
                 android:id="@+id/confirmButton"
                 android:layout_width="match_parent"
