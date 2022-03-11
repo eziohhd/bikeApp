@@ -252,7 +252,7 @@ public class KdGaugeView extends View {
             float x = (float) (mCircleCenterX + mDotedCircleRadius * Math.cos(radian));
             float y = (float) (mCircleCenterY + mDotedCircleRadius * Math.sin(radian));
 
-            canvas.drawCircle(x, y, 2, mSmallDotCirclePaint);
+//            canvas.drawCircle(x, y, 2, mSmallDotCirclePaint);
         }
 
         for (int i = 0; 270 >= i; i = i + 45) {
@@ -260,13 +260,13 @@ public class KdGaugeView extends View {
             float x = (float) (mCircleCenterX + mDotedCircleRadius * Math.cos(radian));
             float y = (float) (mCircleCenterY + mDotedCircleRadius * Math.sin(radian));
 
-            canvas.drawCircle(x, y, 4, mBigDotCirclePaint);
+//            canvas.drawCircle(x, y, 4, mBigDotCirclePaint);
         }
 
         //Draw Alert circle
         float alertSpeedAngle = (mSafeSpeedLimit / mPerDegreeSpeed);
 
-        canvas.drawCircle((float) (mCircleCenterX + mDotedCircleRadius * Math.cos(Math.toRadians(alertSpeedAngle))), (float) (mCircleCenterY + mDotedCircleRadius * Math.sin(Math.toRadians(alertSpeedAngle))), 6, mAlertDotCirclePaint);
+//        canvas.drawCircle((float) (mCircleCenterX + mDotedCircleRadius * Math.cos(Math.toRadians(alertSpeedAngle))), (float) (mCircleCenterY + mDotedCircleRadius * Math.sin(Math.toRadians(alertSpeedAngle))), 6, mAlertDotCirclePaint);
 //        canvas.drawCircle(mCircleCenterX, mCircleCenterY, 6, mAlertDotCirclePaint);
 
 //        //Draw progress bar
@@ -311,16 +311,16 @@ public class KdGaugeView extends View {
         //Rotate canvas again to write the text in correct orientation
         canvas.rotate(+225, mCircleCenterX, mCircleCenterY);
 
-        //Draw Min and Max Text
-        mSpeedLimitTextPaint.setTextAlign(Paint.Align.LEFT);
-        float x_min = (float) (mCircleCenterX + mDotedCircleRadius * Math.cos(Math.toRadians(-225)));
-        float y_min = (float) (mCircleCenterY + mDotedCircleRadius * Math.sin(Math.toRadians(-225)));
-        canvas.drawText("" + (int) mMinSpeed, x_min + 10, y_min - 10, mSpeedLimitTextPaint);
-
-        mSpeedLimitTextPaint.setTextAlign(Paint.Align.RIGHT);
-        float x_max = (float) (mCircleCenterX + mDotedCircleRadius * Math.cos(Math.toRadians(45)));
-        float y_maz = (float) (mCircleCenterY + mDotedCircleRadius * Math.sin(Math.toRadians(45)));
-        canvas.drawText("" + (int) mMaxSpeed, x_max - 10, y_maz - 10, mSpeedLimitTextPaint);
+//        //Draw Min and Max Text
+//        mSpeedLimitTextPaint.setTextAlign(Paint.Align.LEFT);
+//        float x_min = (float) (mCircleCenterX + mDotedCircleRadius * Math.cos(Math.toRadians(-225)));
+//        float y_min = (float) (mCircleCenterY + mDotedCircleRadius * Math.sin(Math.toRadians(-225)));
+//        canvas.drawText("" + (int) mMinSpeed, x_min + 10, y_min - 10, mSpeedLimitTextPaint);
+//
+//        mSpeedLimitTextPaint.setTextAlign(Paint.Align.RIGHT);
+//        float x_max = (float) (mCircleCenterX + mDotedCircleRadius * Math.cos(Math.toRadians(45)));
+//        float y_maz = (float) (mCircleCenterY + mDotedCircleRadius * Math.sin(Math.toRadians(45)));
+//        canvas.drawText("" + (int) mMaxSpeed, x_max - 10, y_maz - 10, mSpeedLimitTextPaint);
 
 
         //Text is always draw around the x coordinate and y coordinate is base line, so we have to shift the base line

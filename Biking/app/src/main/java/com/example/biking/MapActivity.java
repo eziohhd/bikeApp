@@ -126,14 +126,17 @@ public class MapActivity extends AppCompatActivity implements
     int counter; // X-axis
     int counter_yAcc;
     int counterVelocity;
+    int counterGravity;
     float GRAVITY_SWEDEN = 9.81666f;
     double velocity = 0;
     double tiltAngle;
+    double tilt;
 
     float x, y, z; // acceleration on 3 axises excluding gravity
 
     float x_fGravity, y_fGravity, z_fGravity;
-
+    float x_fGyro, y_fGyro, z_fGyro; // Gyroscope
+    boolean integration = false;
     int nBufferSize = 300; // get average of y_axix acceleration
     int nMovMeanSize = 100;
     double dArrayXacc[] = new double[nBufferSize];
@@ -174,7 +177,6 @@ public class MapActivity extends AppCompatActivity implements
     Common common = new Common();
 
 
-    boolean bSave = true;
 
     // IIR filter removing gravity
     float gravity[] = new float[3]; // global variable in onCreate
@@ -195,6 +197,7 @@ public class MapActivity extends AppCompatActivity implements
     ArrayList<Float> vList = new ArrayList<Float>();
     ArrayList<Float> vgpsList = new ArrayList<Float>();
     boolean bGoSave = false;
+    boolean bSave = true;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -207,6 +210,7 @@ public class MapActivity extends AppCompatActivity implements
         counter_yAcc = 0;
         counterVelocity = 0;
         accElapsedTime = 0;
+        counterGravity = 0;
 
         startButton = findViewById(R.id.btnStart);
         startButton.setOnClickListener(view -> {
@@ -279,6 +283,9 @@ public class MapActivity extends AppCompatActivity implements
                 .findFragmentById(R.id.map);
 
         mapFragment.getMapAsync(this);
+
+    // save file
+
     }
 
     @Override
@@ -289,13 +296,32 @@ public class MapActivity extends AppCompatActivity implements
             // Move along X-axis
             counter++;
 
+//            if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
+//                x_fGyro = event.values[0];
+//                y_fGyro = event.values[1];
+//                z_fGyro = event.values[2];
+//
+//                if((Math.abs(x_fGyro) > 1)||(Math.abs(y_fGyro) > 1)||(Math.abs(z_fGyro) > 1))
+//                {
+//                    //velocity = 0 ;
+//                    integration = false;
+//                }
+//                else{
+//                    integration = true;
+//                }
+//
+//
+//            }
+
             if (event.sensor.getType() == Sensor.TYPE_GRAVITY) {
                 // Get sensor data
                 x_fGravity = event.values[0];
                 y_fGravity = event.values[1];
                 z_fGravity = event.values[2];
-                tiltAngle = 180 * Math.asin(y_fGravity / GRAVITY_SWEDEN) / Math.PI;
-
+                counterGravity ++;  // tilt initialization
+                if(counterGravity < 100 ) {
+                    tiltAngle = 180 * Math.asin(y_fGravity / GRAVITY_SWEDEN) / Math.PI;
+                }
 
             }
 
@@ -308,9 +334,9 @@ public class MapActivity extends AppCompatActivity implements
 
 
                 // add data to arraylists
-//                accListX.add(x);
-//                accListY.add(y);
-//                accListZ.add(z);
+                accListX.add(x);
+                accListY.add(y);
+                accListZ.add(z);
 
                 bGoSave = true;
 
@@ -340,7 +366,7 @@ public class MapActivity extends AppCompatActivity implements
                         if (i < arrayComp.length - 10) {
                             counterZeroAcc = 0;
                             for (int k = i; k < i + 10; k++) {
-                                if (Math.abs(movMeanOut[k] - movMeanOut[k + 1]) < 0.02) {
+                                if (Math.abs(movMeanOut[k]) < 0.02) {
                                     counterZeroAcc++;
                                 }
                             }
@@ -348,12 +374,13 @@ public class MapActivity extends AppCompatActivity implements
                     }
                     // velocity and distance calculation
                     if (counterZeroAcc > 9) {
-                        velocity = velocity * 0.8;
+                        velocity = 0;
                     } else {
                         for (int i = 0; i < arrayComp.length; i++) {
                             if (velocity < 0) {
                                 velocity = 0;
                             } else {
+
                                 velocity = velocity + 3.6 * arrayComp[i] / Math.cos(tiltAngle / 180 * Math.PI) * 0.005;
                             }
                             distance = distance + velocity / 3.6 * 0.005;
@@ -378,6 +405,8 @@ public class MapActivity extends AppCompatActivity implements
             }
 
         } else if (bGoSave) {
+
+
             if (bSave) {
 //                array_xAccMadgwick = new float[accListMadgwickX.size()];
 //                array_yAccMadgwick = new float[accListMadgwickY.size()];
@@ -387,13 +416,14 @@ public class MapActivity extends AppCompatActivity implements
 //                array_xAccRaw = new float[accListRawX.size()];
 //                array_yAccRaw = new float[accListRawY.size()];
 //                array_zAccRaw = new float[accListRawZ.size()];
-//                array_xAcc = new float[accListX.size()];
-//                array_yAcc = new float[accListY.size()];
-//                array_zAcc = new float[accListZ.size()];
+                array_xAcc = new float[accListX.size()];
+                array_yAcc = new float[accListY.size()];
+                array_zAcc = new float[accListZ.size()];
 //                array_xGyro = new float[gyroListX.size()];
 //                array_yGyro = new float[gyroListY.size()];
 //                array_zGyro = new float[gyroListZ.size()];
                 array_v = new float[vList.size()];
+
                 array_vgps = new float[vgpsList.size()];
 
 //                for (int i = 0; i < accListMadgwickX.size(); i++) {
@@ -408,11 +438,11 @@ public class MapActivity extends AppCompatActivity implements
 //                    array_zAccRaw[i] = accListRawZ.get(i);
 //                }
 //
-//                for (int i = 0; i < accListX.size(); i++) {
-//                    array_xAcc[i] = accListX.get(i);
-//                    array_yAcc[i] = accListY.get(i);
-//                    array_zAcc[i] = accListZ.get(i);
-//                }
+                for (int i = 0; i < accListX.size(); i++) {
+                    array_xAcc[i] = accListX.get(i);
+                    array_yAcc[i] = accListY.get(i);
+                    array_zAcc[i] = accListZ.get(i);
+                }
 //
 //                for (int i = 0; i < gyroListX.size(); i++) {
 //                    array_xGyro[i] = gyroListX.get(i);
@@ -434,9 +464,9 @@ public class MapActivity extends AppCompatActivity implements
 //                save(DataFileMadgwickX, array_xAccMadgwick);
 //                save(DataFileMadgwickY, array_yAccMadgwick);
 //                save(DataFileMadgwickZ, array_zAccMadgwick);
-//                save(DataFileX, array_xAcc);
-//                save(DataFileY, array_yAcc);
-//                save(DataFileZ, array_zAcc);
+                save("DataFileX.txt", array_xAcc);
+                save("DataFileY.txt", array_yAcc);
+                save("DataFileZ.txt", array_zAcc);
 //                save(DataFileGyroX, array_xGyro);
 //                save(DataFileGyroY, array_yGyro);
 //                save(DataFileGyroZ, array_zGyro);
@@ -521,6 +551,7 @@ public class MapActivity extends AppCompatActivity implements
         Log.d(TAG, "onMapReady: map is ready");
         mMap = googleMap;
 
+
         if (mapView != null && mapView.findViewById(Integer.parseInt("1")) != null) {
             //get the button view
             View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
@@ -534,7 +565,7 @@ public class MapActivity extends AppCompatActivity implements
 
         if (mLocationPermissionsGranted) {
             getDeviceLocation();
-            lineOptions = new PolylineOptions().width(5).color(android.R.color.holo_purple);
+            lineOptions = new PolylineOptions().width(5).color(this.getResources().getColor(R.color.purple_200));
             lineRoute = mMap.addPolyline(lineOptions);
 
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -590,7 +621,13 @@ public class MapActivity extends AppCompatActivity implements
             seconds = 0;
             stopWatchView.setMinute(0);
             stopWatchView.setSecond(0);
-
+            // 4e
+            distance = 0;
+            velocity = 0;
+            caloriesBurned = 0;
+            speedoMeterView.setSpeed(0);
+            energyMeterView.setEnergy(0);
+            distanceMeterView.setDistance(0);
             popupWindow.dismiss();
         });
 

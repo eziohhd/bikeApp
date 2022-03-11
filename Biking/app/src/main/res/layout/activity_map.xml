@@ -67,7 +67,7 @@
         app:speedDialRingWidth='3dp'
         app:speedLimitTextSize='10dp'
         app:speedTextColor="@color/purple_200"
-        app:speedTextSize='20dp'
+        app:speedTextSize='45dp'
         app:speed_limit="50"
         app:unitOfMeasurement="Km/Hr"
         app:unitOfMeasurementTextColor="@color/purple_200"

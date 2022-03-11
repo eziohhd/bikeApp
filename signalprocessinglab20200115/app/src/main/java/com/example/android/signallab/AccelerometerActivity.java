@@ -32,6 +32,7 @@ public class AccelerometerActivity extends AppCompatActivity implements SensorEv
 
     GraphView graph;
     TextView xVal, yVal, zVal, tiltVal, vVal, textContent;
+    TextView mxVal,myVal,mzVal,gxVal,gyVal,gzVal;
     SensorManager sensorManager;
     Sensor accelerometer;
     LineGraphSeries<DataPoint> seriesX, seriesY, seriesZ;
@@ -162,6 +163,19 @@ public class AccelerometerActivity extends AppCompatActivity implements SensorEv
         vVal = findViewById(R.id.vValueView);
         textContent = findViewById(R.id.textContentView);
 
+        mxVal=findViewById(R.id.mx);
+        myVal=findViewById(R.id.my);
+        mzVal=findViewById(R.id.mz);
+
+        gxVal = findViewById(R.id.gx);
+        gyVal = findViewById(R.id.gy);
+        gzVal = findViewById(R.id.gz);
+
+
+
+
+
+
         // Initializing the sensor manager with an accelerometer, and registering a listener.
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION); //
@@ -237,6 +251,10 @@ public class AccelerometerActivity extends AppCompatActivity implements SensorEv
                 gyroListY.add(y_fGyro);
                 gyroListZ.add(z_fGyro);
 
+                gxVal.setText(String.valueOf(x_fGyro));
+                gyVal.setText(String.valueOf(y_fGyro));
+                gzVal.setText(String.valueOf(z_fGyro));
+
 
             }
             if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
@@ -244,6 +262,10 @@ public class AccelerometerActivity extends AppCompatActivity implements SensorEv
                 mX = event.values[0];
                 mY = event.values[1];
                 mZ = event.values[2];
+
+                mxVal.setText(String.valueOf(mX));
+                myVal.setText(String.valueOf(mY));
+                mzVal.setText(String.valueOf(mZ));
 
             }
             if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {

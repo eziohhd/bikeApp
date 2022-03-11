@@ -121,15 +121,15 @@ public class Common {
             met = 10;
         } else if ((threshold6 < mph) && (mph <= threshold7)) {
             met = 12;
-        } else if(mph>threshold7){
+        } else if (mph > threshold7) {
             met = 15.8;
-        } else{
+        } else {
             met = 0;
         }
 
         // calories burned
         caloriesBurned = caloriesBurned + met * bodyWeight * 3.5 / 200 / 60 * seconds;
-        return  caloriesBurned;
+        return caloriesBurned;
 
 
     }
@@ -176,6 +176,7 @@ public class Common {
         // thresholds
         double threshold1 = 0.8;
         double threshold2 = 1.2;
+        double threshold3 = 1.0;
 
         // find peaks and valleys
         int counterPeaks = 0;
@@ -209,9 +210,9 @@ public class Common {
                 motionStatus.add(1);// acc
             else if (((peakValleys.get(i + 1) - peakValleys.get(i)) < -threshold2) && (peakValleys.get(i) > threshold1))
                 motionStatus.add(1);// acc
-            else if (((peakValleys.get(i + 1) - peakValleys.get(i)) < -threshold1) && (peakValleys.get(i + 1) < -threshold2))
+            else if (((peakValleys.get(i + 1) - peakValleys.get(i)) < -threshold2) && (peakValleys.get(i + 1) < -threshold3))
                 motionStatus.add(1);// dec
-            else if (((peakValleys.get(i + 1) - peakValleys.get(i)) > threshold2) && (peakValleys.get(i) < -threshold1))
+            else if (((peakValleys.get(i + 1) - peakValleys.get(i)) > threshold2) && (peakValleys.get(i) < -threshold3))
                 motionStatus.add(1);// dec
             else
                 motionStatus.add(0);// const
@@ -267,6 +268,7 @@ public class Common {
             if (avgconstV < 0) {
                 for (int j = 0; j < array.length; ++j) {
                     array[j] -= avgconstV;
+
                 }
             }
             return array;
@@ -277,21 +279,48 @@ public class Common {
             // System.arraycopy(array, 0, m_array, 0, LastZoneLen);
             // return null;
             for (int i = 0; i < array.length; i++) {
-                array[i] = array[i] * 2;
+                array[i] = array[i] * 2.5;
             }
             return array;
         } else { // cannot detect motion status
             double driftAcc = min(array);
+            double maxAcc = max(array);
             avgconstV = average(array);
+//            if (avgconstV < 0) {
+//                for (int j = 0; j < array.length; ++j) {
+//                    array[j] -= avgconstV;
+//                }
+//            } else if ((driftAcc < 0) &&(driftAcc > -0.5) ) {
+//                for (int j = 0; j < array.length; ++j) {
+//                    array[j] -= driftAcc;
+//                }
+//            }
+//            if (avgconstV > 0) {
+                if ((driftAcc > 0)&&(maxAcc > threshold1)) {
+                    for (int j = 0; j < array.length; ++j) {
+                        array[j] = 2.5*avgconstV
+                        ;
+                    }
+                }
+//
+//            }
             if (avgconstV < 0) {
-                for (int j = 0; j < array.length; ++j) {
-                    array[j] -= avgconstV;
+                if ((driftAcc < 0) && (driftAcc > -0.7)) {
+                    for (int j = 0; j < array.length; ++j) {
+                        array[j] -= driftAcc
+                        ;
+                    }
                 }
-            } else if (driftAcc < 0) {
-                for (int j = 0; j < array.length; ++j) {
-                    array[j] -= driftAcc;
-                }
+//                else if(driftAcc < -threshold3)
+//                {
+//                    for (int j = 0; j < array.length; ++j) {
+//                        array[j] = 2.5* array[j];
+//                    }
+//                }
+
             }
+
+
             return array;
         }
     }
